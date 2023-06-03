@@ -8,6 +8,7 @@ plugins {
  */
 val hadoopVersion: String = "3.3.5"
 
+
 subprojects {
     group = "com.icloud"
     version = "1.0-SNAPSHOT"
@@ -37,10 +38,31 @@ subprojects {
         implementation("org.apache.hadoop:hadoop-mapreduce-client-jobclient:$hadoopVersion")
     }
 
-    tasks.test {
-        useJUnitPlatform()
-    }
+
 }
 
 
+tasks.build {
+    val red = "\u001B[31m"
+    val reset = "\u001B[0m"
+    val yellow = "\u001B[33m"
+    val green = "\u001B[32m"
+    val buildStartTime = System.currentTimeMillis()
+    doFirst {
+        println("${yellow}${project.name} build Started")
+    }
+    doLast {
+        val buildEndTime = System.currentTimeMillis()
+        val buildDuration = buildEndTime - buildStartTime
+
+        println("""
+                ${green}${project.name} build completed
+                Build Time : $buildDuration ms
+            """.trimIndent())
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
 

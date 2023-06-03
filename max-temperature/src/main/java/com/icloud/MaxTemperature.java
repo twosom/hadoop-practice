@@ -28,6 +28,7 @@ public class MaxTemperature {
         Job job = Job.getInstance(jobConfig);
 
         job.setMapperClass(MaxTemperatureMapper.class);
+        job.setCombinerClass(MaxTemperatureReducer.class);
         job.setReducerClass(MaxTemperatureReducer.class);
 
         job.setOutputKeyClass(Text.class);
