@@ -1,10 +1,12 @@
+val mainClassName = "com.icloud.MaxTemperature"
+
 application {
-    mainClass.set("com.icloud.MaxTemperature")
+    mainClass.set(mainClassName)
 }
 
 tasks.jar {
     manifest {
-        attributes("Main-Class" to "com.icloud.MaxTemperature")
+        attributes("Main-Class" to mainClassName)
     }
 }
 tasks.test {
