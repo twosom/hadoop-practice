@@ -23,9 +23,7 @@ public class FileCopyWithProgress {
 
         final Configuration conf = new Configuration();
         final FileSystem fs = FileSystem.get(URI.create(dst), conf);
-        OutputStream out = fs.create(new Path(dst), () -> {
-            System.out.print(".");
-        });
+        OutputStream out = fs.create(new Path(dst), () -> System.out.print("."));
 
         IOUtils.copyBytes(in, out, 4096, true);
     }

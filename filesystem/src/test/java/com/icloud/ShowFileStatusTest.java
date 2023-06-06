@@ -1,6 +1,7 @@
 package com.icloud;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -82,6 +83,31 @@ public class ShowFileStatusTest {
                 () -> assertEquals(stat.getGroup(), "supergroup"),
                 () -> assertEquals(stat.getPermission().toString(), "rwxr-xr-x")
         );
+    }
+
+    @Test
+    void whenFileCreateThenFileShouldBeExists() throws IOException {
+        Path p = new Path("p");
+        fs.create(p);
+        assertTrue(fs.exists(p));
+    }
+
+    @Test
+    void whenFileFlushedThenFileSizeIsNotGreaterThen0() throws IOException {
+        Path p = new Path("p");
+        OutputStream out = fs.create(p);
+        out.write("content".getBytes(StandardCharsets.UTF_8));
+        out.flush();
+        assertEquals(fs.getFileStatus(p).getLen(), 0L);
+    }
+
+    @Test
+    void whenFileHFlushedThenFileSizeIsGreaterThen0() throws IOException {
+        Path p = new Path("p");
+        FSDataOutputStream output = fs.create(p);
+        output.write("content".getBytes(StandardCharsets.UTF_8));
+        output.hflush(); // 데이터노드가 디스크를 데이터에 쓰는 것이 아닌, 메모리에 데이터를 쓰기 때문에 데이터 유실에 각별히 주의 필요
+        assertEquals(fs.getFileStatus(p).getLen(), "content".length());
     }
 }
 
