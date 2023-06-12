@@ -1,16 +1,19 @@
 package com.icloud.mapper;
 
-import com.icloud.mapper.MaxTemperatureMapper;
 import com.icloud.reducer.MaxTemperatureReducer;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Counter;
+import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MaxTemperatureMapperTest {
 
@@ -47,7 +50,24 @@ public class MaxTemperatureMapperTest {
                         Arrays.asList(new IntWritable(10), new IntWritable(5)))
                 .withOutput(new Text("1950"), new IntWritable(10))
                 .runTest();
+    }
 
+    @Test
+    void parseMalformedTemperature() throws IOException {
+        Text value = new Text(
+                "0335999999433181957042302005+37950+139117SAO +0004" +
+                        /*연도*/
+                "RJSN V02011359003150070356999999433201957010100005+353"
+                /* 기온*/);
+        Counters counters = new Counters();
+        new MapDriver<LongWritable, Text, Text, IntWritable>()
+                .withMapper(new MaxTemperatureMapper())
+                .withInput(new LongWritable(0), value)
+                .withCounters(counters)
+                .runTest();
+
+        Counter c = counters.findCounter(MaxTemperatureMapper.Temperature.MALFORMED);
+        assertEquals(c.getValue(), 1);
     }
 
 
