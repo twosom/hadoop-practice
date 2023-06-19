@@ -2,39 +2,48 @@ package com.icloud.parser;
 
 import org.apache.hadoop.io.Text;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 public class NcdcRecordParser implements Parser<Text, NcdcRecordParser.NcdcRecord> {
 
     private static final int MISSING_TEMPERATURE = 9999;
 
+    private static final DateFormat DATE_FORMAT =
+            new SimpleDateFormat("yyyyMMddHHmm");
+
     @Override
     public NcdcRecord parse(Text record) {
-        String record1 = record.toString();
-        final String year = record1.substring(15, 19);
+        final String recordString = record.toString();
+        final String stationId = recordString.substring(4, 10) + "-" + recordString.substring(10, 15);
+        final String year = recordString.substring(15, 19);
         boolean airTemperatureMalformed = false;
         int airTemperature = 0;
-        switch (record1.charAt(87)) {
+        switch (recordString.charAt(87)) {
             case '+':
-                airTemperature = Integer.parseInt(record1.substring(88, 92));
+                airTemperature = Integer.parseInt(recordString.substring(88, 92));
                 break;
             case '-':
-                airTemperature = Integer.parseInt(record1.substring(87, 92));
+                airTemperature = Integer.parseInt(recordString.substring(87, 92));
                 break;
             default:
                 airTemperatureMalformed = true;
         }
 
-        final String quality = record1.substring(92, 93);
-        return new NcdcRecord(year, airTemperature, quality, airTemperatureMalformed);
+        final String quality = recordString.substring(92, 93);
+        return new NcdcRecord(stationId, year, airTemperature, quality, airTemperatureMalformed);
     }
 
     public static class NcdcRecord {
 
+        private final String stationId;
         private final String year;
         private final int airTemperature;
         private final String quality;
         private final boolean airTemperatureMalformed;
 
-        public NcdcRecord(String year, int airTemperature, String quality, boolean airTemperatureMalformed) {
+        public NcdcRecord(String stationId, String year, int airTemperature, String quality, boolean airTemperatureMalformed) {
+            this.stationId = stationId;
             this.year = year;
             this.airTemperature = airTemperature;
             this.quality = quality;
@@ -42,20 +51,24 @@ public class NcdcRecordParser implements Parser<Text, NcdcRecordParser.NcdcRecor
         }
 
         public String getYear() {
-            return year;
+            return this.year;
         }
 
         public int getAirTemperature() {
-            return airTemperature;
+            return this.airTemperature;
         }
 
         public String getQuality() {
-            return quality;
+            return this.quality;
         }
 
         public boolean isValidTemperature() {
             return !airTemperatureMalformed && airTemperature != MISSING_TEMPERATURE
                    && quality.matches("[01459]");
+        }
+
+        public String getStationId() {
+            return this.stationId;
         }
 
         public boolean isMalformedTemperature() {
