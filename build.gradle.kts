@@ -36,15 +36,22 @@ subprojects {
         testImplementation("junit:junit:4.13.1")
         testImplementation("org.mockito:mockito-core:5.3.1")
         testImplementation("org.apache.hadoop:hadoop-minicluster:$hadoopVersion")
+
         if (project.name != "mapreduce-dev") {
             implementation("org.apache.hadoop:hadoop-client:$hadoopVersion")
             implementation("org.apache.hadoop:hadoop-mapreduce-client-core:$hadoopVersion")
             implementation("org.apache.hadoop:hadoop-mapreduce-client-jobclient:$hadoopVersion")
         }
+
         implementation("net.bytebuddy:byte-buddy:1.10.22")
         testImplementation("org.objenesis:objenesis:3.2")
 
+        if (project.name != "common") {
+            implementation(project(":common"))
+        }
     }
+
+
     tasks.build {
         val yellow = "\u001B[33m"
         val green = "\u001B[32m"
@@ -64,5 +71,10 @@ subprojects {
     }
     tasks.test {
         useJUnitPlatform()
+    }
+
+    tasks.jar {
+        from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 }

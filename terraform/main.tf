@@ -106,6 +106,10 @@ resource "docker_container" "datanode" {
     volume_name    = docker_volume.datanode.name
     container_path = "/hadoop/dfs/data"
   }
+  volumes {
+    host_path      = "/Users/hope/Documents"
+    container_path = "/somang"
+  }
   env = concat(local.default_env, ["SERVICE_PRECONDITION=namenode:9870"])
   ports {
     internal = 9864
@@ -137,14 +141,15 @@ resource "docker_container" "resourcemanager" {
 }
 
 resource "docker_container" "nodemanager" {
-  name  = "nodemanager"
+  count = 2
+  name  = "nodemanager-${count.index}"
   image = module.nodemanager_image.image_name
   env   = concat(local.default_env, [
     "SERVICE_PRECONDITION=namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
   ])
   ports {
     internal = 8042
-    external = 8042
+    external = tonumber(8042 + count.index)
   }
 
   networks_advanced {

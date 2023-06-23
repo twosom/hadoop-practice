@@ -2,15 +2,9 @@ package com.icloud.parser;
 
 import org.apache.hadoop.io.Text;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
 public class NcdcRecordParser implements Parser<Text, NcdcRecordParser.NcdcRecord> {
 
     private static final int MISSING_TEMPERATURE = 9999;
-
-    private static final DateFormat DATE_FORMAT =
-            new SimpleDateFormat("yyyyMMddHHmm");
 
     @Override
     public NcdcRecord parse(Text record) {
@@ -54,6 +48,10 @@ public class NcdcRecordParser implements Parser<Text, NcdcRecordParser.NcdcRecor
             return this.year;
         }
 
+        public int getYearInt() {
+            return Integer.parseInt(this.year);
+        }
+
         public int getAirTemperature() {
             return this.airTemperature;
         }
@@ -65,6 +63,10 @@ public class NcdcRecordParser implements Parser<Text, NcdcRecordParser.NcdcRecor
         public boolean isValidTemperature() {
             return !airTemperatureMalformed && airTemperature != MISSING_TEMPERATURE
                    && quality.matches("[01459]");
+        }
+
+        public boolean isMissingTemperature() {
+            return airTemperature == MISSING_TEMPERATURE;
         }
 
         public String getStationId() {
